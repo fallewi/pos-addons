@@ -8,8 +8,8 @@ odoo.define('pos_restaurant.base', function (require) {
     var screens = require('point_of_sale.screens');
     var core = require('web.core');
     var Session = require('web.Session');
+    var mixins = require('web.mixins');
 
-    var mixins = core.mixins;
 
     var Printer = core.Class.extend(mixins.PropertiesMixin,{
         init: function(parent,options){
