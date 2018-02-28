@@ -91,7 +91,7 @@ odoo.define('pos_order_cancel.widgets', function (require) {
             var mode = this.state.get('mode');
             var order = self.pos.get_order();
             var current_line = order.get_selected_orderline();
-            if (this.pos.config.show_popup_change_quantity && mode === 'quantity' && current_line.quantity !== 0) {
+            if (this.pos.config.show_popup_change_quantity && mode === 'quantity' && current_line && current_line.quantity !== 0) {
                 this.gui.show_popup('number',{
                     'title': _t('Quantity for Cancellation'),
                     'value': 1,

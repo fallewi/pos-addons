@@ -131,7 +131,9 @@ odoo.define('pos_disable_payment', function(require){
             } else {
                 // allow all buttons
                 $('.numpad').find("[data-mode='quantity']").removeClass('disable');
-                $('.numpad').find('.numpad-backspace').removeClass('disable');
+                if (user.allow_delete_order_line) {
+                    $('.numpad').find('.numpad-backspace').removeClass('disable');
+                }
             }
         }
     });
