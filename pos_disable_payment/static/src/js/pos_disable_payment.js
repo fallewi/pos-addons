@@ -58,8 +58,12 @@ odoo.define('pos_disable_payment', function(require){
     screens.OrderWidget.include({
         bind_order_events: function(){
             this._super();
+            var self = this;
             var order = this.pos.get('selectedOrder');
             order.orderlines.bind('add remove', this.chrome.check_allow_delete_order, this.chrome);
+            this.pos.bind('change:cashier', function(){
+                self.check_kitchen_access();
+            });
         },
         orderline_change: function(line) {
             this._super(line);
@@ -79,12 +83,25 @@ odoo.define('pos_disable_payment', function(require){
             this._super(orderline, event);
             this.check_kitchen_access(orderline);
         },
-        check_kitchen_access: function(line){
+        renderElement:function(scrollbottom){
+            this._super(scrollbottom);
+            if (this.pos.get_order()) {
+                this.check_kitchen_access();
+            }
+        },
+        check_kitchen_access: function(line) {
+            line = line || this.pos.get_order().get_selected_orderline();
             var user = this.pos.cashier || this.pos.user;
-            if (user.allow_decrease_amount || user.allow_decrease_kitchen_only) {
+            var state = this.getParent().numpad.state;
+
+            if (user.allow_decrease_amount || user.allow_decrease_kitchen_only || !line || (line && line.mp_dirty !== false)) {
+                $('.numpad').find("[data-mode='quantity']").removeClass('disable');
+                if (state.get('mode') !== 'quantity') {
+                    state.changeMode('quantity');
+                }
                 return true;
             }
-            var state = this.getParent().numpad.state;
+
             if (line.mp_dirty === false) {
                 $('.numpad').find("[data-mode='quantity']").addClass('disable');
                 if (user.allow_discount) {
@@ -93,11 +110,6 @@ odoo.define('pos_disable_payment', function(require){
                     state.changeMode('price');
                 } else {
                     state.changeMode("");
-                }
-            } else {
-                $('.numpad').find("[data-mode='quantity']").removeClass('disable');
-                if (state.get('mode') !== 'quantity') {
-                    state.changeMode('quantity');
                 }
             }
         }
