@@ -84,9 +84,11 @@ odoo.define('pos_order_cancel_restaurant.models', function (require) {
             var self = this;
             var res = _super_order.computeChanges.apply(this, arguments);
             if (res.cancelled && res.cancelled.length) {
-                res.cancelled.forEach(function(product) {
+                res.cancelled.forEach(function(product, index) {
                     var line = self.get_orderline(product.line_id);
-                    if (line && line.cancelled_line && line.cancelled_line.reason) {
+                    if (self.pos.config.auto_send_to_kitchen && product.qty === 0) {
+                        res.cancelled.splice(index, 1);
+                    } else if (line && line.cancelled_line && line.cancelled_line.reason) {
                         product.reason = line.cancelled_line.reason;
                     }
                 });
