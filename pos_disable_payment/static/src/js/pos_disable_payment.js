@@ -93,24 +93,45 @@ odoo.define('pos_disable_payment', function(require){
             line = line || this.pos.get_order().get_selected_orderline();
             var user = this.pos.cashier || this.pos.user;
             var state = this.getParent().numpad.state;
-
-            if (user.allow_decrease_amount || user.allow_decrease_kitchen_only || !line || (line && line.mp_dirty !== false)) {
+            if (state.get('mode') !== 'quantity') {
+                state.changeMode('quantity');
+            }
+            if (!line) {
+                $('.numpad').find('.numpad-backspace').removeClass('disable');
                 $('.numpad').find("[data-mode='quantity']").removeClass('disable');
-                if (state.get('mode') !== 'quantity') {
-                    state.changeMode('quantity');
-                }
-                return true;
+                return false;
             }
 
-            if (line.mp_dirty === false) {
-                $('.numpad').find("[data-mode='quantity']").addClass('disable');
-                if (user.allow_discount) {
-                    state.changeMode('discount');
-                } else if (user.allow_edit_price) {
-                    state.changeMode('price');
+            if (!user.allow_decrease_amount) {
+                // disable the backspace button of numpad
+                $('.numpad').find('.numpad-backspace').addClass('disable');
+
+                if (user.allow_decrease_kitchen_only) {
+                    $('.numpad').find("[data-mode='quantity']").removeClass('disable');
+                    if (state.get('mode') !== 'quantity') {
+                        state.changeMode('quantity');
+                    }
                 } else {
-                    state.changeMode("");
+                    if (line.mp_dirty) {
+                        $('.numpad').find("[data-mode='quantity']").removeClass('disable');
+                        if (state.get('mode') !== 'quantity') {
+                            state.changeMode('quantity');
+                        }
+                    } else {
+                        $('.numpad').find("[data-mode='quantity']").addClass('disable');
+                        if (user.allow_discount) {
+                            state.changeMode('discount');
+                        } else if (user.allow_edit_price) {
+                            state.changeMode('price');
+                        } else {
+                            state.changeMode("");
+                        }
+                    }
                 }
+            } else {
+                // allow all buttons
+                $('.numpad').find("[data-mode='quantity']").removeClass('disable');
+                $('.numpad').find('.numpad-backspace').removeClass('disable');
             }
         }
     });
@@ -250,25 +271,12 @@ odoo.define('pos_disable_payment', function(require){
                 this.$el.find('.numpad-minus').addClass('disable');
             }
             if (orderline && orderline.quantity <= 0) {
-                if (user.allow_delete_order_liner) {
+                if (user.allow_delete_order_line) {
                     this.$el.find('.numpad-backspace').removeClass('disable');
-                }else{
+                } else{
                     this.$el.find('.numpad-backspace').addClass('disable');
                 }
             }
-        }
-    });
-
-    screens.NumpadWidget.include({
-        clickDeleteLastChar: function(){
-            var user = this.pos.cashier || this.pos.user;
-            if(!user.allow_decrease_amount && this.state.get('mode') === 'quantity'){
-                return;
-            }
-            if (!user.allow_delete_order_line && this.state.get('buffer') === "" && this.state.get('mode') === 'quantity'){
-                return;
-            }
-            return this._super();
         }
     });
 });
