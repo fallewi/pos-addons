@@ -10,7 +10,7 @@ class PosConfig(models.Model):
     auto_send_to_kitchen = fields.Boolean(string="Automatic Order Sending",
                                           help="Send order to the kitchen immediately after cancelation / refund the orderline (if the line was sent before)",
                                           default=False)
-    save_canceled_orders = fields.Boolean(string="Save Canceled / Refunded Order", default=True,
+    save_canceled_kitchen_orders_only = fields.Boolean(string="Save Canceled / Refunded kitchen orders only", default=False,
                                           help="Save canceled / refunded orders in Backend")
 
 
@@ -22,4 +22,4 @@ class PosOrderLineCanceled(models.Model):
 
 class PosOrder(models.Model):
     _inherit = "pos.order"
-    save_canceled_orders = fields.Boolean(related='config_id.save_canceled_orders', store=True)
+    save_canceled_kitchen_orders_only = fields.Boolean(related='config_id.save_canceled_kitchen_orders_only', store=True)
