@@ -102,7 +102,13 @@ odoo.define('pos_disable_payment', function(require){
                 return false;
             }
 
-            if (!user.allow_decrease_amount) {
+            if (user.allow_decrease_amount) {
+                // allow all buttons
+                $('.numpad').find("[data-mode='quantity']").removeClass('disable');
+                if (user.allow_delete_order_line) {
+                    $('.numpad').find('.numpad-backspace').removeClass('disable');
+                }
+            } else {
                 // disable the backspace button of numpad
                 $('.numpad').find('.numpad-backspace').addClass('disable');
 
@@ -111,28 +117,20 @@ odoo.define('pos_disable_payment', function(require){
                     if (state.get('mode') !== 'quantity') {
                         state.changeMode('quantity');
                     }
-                } else {
-                    if (line.mp_dirty) {
-                        $('.numpad').find("[data-mode='quantity']").removeClass('disable');
-                        if (state.get('mode') !== 'quantity') {
-                            state.changeMode('quantity');
-                        }
-                    } else {
-                        $('.numpad').find("[data-mode='quantity']").addClass('disable');
-                        if (user.allow_discount) {
-                            state.changeMode('discount');
-                        } else if (user.allow_edit_price) {
-                            state.changeMode('price');
-                        } else {
-                            state.changeMode("");
-                        }
+                } else if (line.mp_dirty) {
+                    $('.numpad').find("[data-mode='quantity']").removeClass('disable');
+                    if (state.get('mode') !== 'quantity') {
+                        state.changeMode('quantity');
                     }
-                }
-            } else {
-                // allow all buttons
-                $('.numpad').find("[data-mode='quantity']").removeClass('disable');
-                if (user.allow_delete_order_line) {
-                    $('.numpad').find('.numpad-backspace').removeClass('disable');
+                } else {
+                    $('.numpad').find("[data-mode='quantity']").addClass('disable');
+                    if (user.allow_discount) {
+                        state.changeMode('discount');
+                    } else if (user.allow_edit_price) {
+                        state.changeMode('price');
+                    } else {
+                        state.changeMode("");
+                    }
                 }
             }
         }
