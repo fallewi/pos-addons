@@ -85,51 +85,52 @@ odoo.define('pos_disable_payment', function(require){
         },
         renderElement:function(scrollbottom){
             this._super(scrollbottom);
-            if (this.pos.get_order()) {
-                this.check_kitchen_access();
-            }
+            this.check_kitchen_access();
         },
         check_kitchen_access: function(line) {
-            line = line || this.pos.get_order().get_selected_orderline();
-            var user = this.pos.cashier || this.pos.user;
-            var state = this.getParent().numpad.state;
-            if (state.get('mode') !== 'quantity') {
-                state.changeMode('quantity');
-            }
-            if (!line) {
-                $('.numpad').find('.numpad-backspace').removeClass('disable');
-                $('.numpad').find("[data-mode='quantity']").removeClass('disable');
-                return false;
-            }
-
-            if (user.allow_decrease_amount) {
-                // allow all buttons
-                $('.numpad').find("[data-mode='quantity']").removeClass('disable');
-                if (user.allow_delete_order_line) {
-                    $('.numpad').find('.numpad-backspace').removeClass('disable');
+            var order = this.pos.get_order();
+            if (order) {
+                line = line || order.get_selected_orderline();
+                var user = this.pos.cashier || this.pos.user;
+                var state = this.getParent().numpad.state;
+                if (state.get('mode') !== 'quantity') {
+                    state.changeMode('quantity');
                 }
-            } else {
-                // disable the backspace button of numpad
-                $('.numpad').find('.numpad-backspace').addClass('disable');
+                if (!line) {
+                    $('.numpad').find('.numpad-backspace').removeClass('disable');
+                    $('.numpad').find("[data-mode='quantity']").removeClass('disable');
+                    return false;
+                }
 
-                if (user.allow_decrease_kitchen_only) {
+                if (user.allow_decrease_amount) {
+                    // allow all buttons
                     $('.numpad').find("[data-mode='quantity']").removeClass('disable');
-                    if (state.get('mode') !== 'quantity') {
-                        state.changeMode('quantity');
-                    }
-                } else if (line.mp_dirty) {
-                    $('.numpad').find("[data-mode='quantity']").removeClass('disable');
-                    if (state.get('mode') !== 'quantity') {
-                        state.changeMode('quantity');
+                    if (user.allow_delete_order_line) {
+                        $('.numpad').find('.numpad-backspace').removeClass('disable');
                     }
                 } else {
-                    $('.numpad').find("[data-mode='quantity']").addClass('disable');
-                    if (user.allow_discount) {
-                        state.changeMode('discount');
-                    } else if (user.allow_edit_price) {
-                        state.changeMode('price');
+                    // disable the backspace button of numpad
+                    $('.numpad').find('.numpad-backspace').addClass('disable');
+
+                    if (user.allow_decrease_kitchen_only) {
+                        $('.numpad').find("[data-mode='quantity']").removeClass('disable');
+                        if (state.get('mode') !== 'quantity') {
+                            state.changeMode('quantity');
+                        }
+                    } else if (line.mp_dirty) {
+                        $('.numpad').find("[data-mode='quantity']").removeClass('disable');
+                        if (state.get('mode') !== 'quantity') {
+                            state.changeMode('quantity');
+                        }
                     } else {
-                        state.changeMode("");
+                        $('.numpad').find("[data-mode='quantity']").addClass('disable');
+                        if (user.allow_discount) {
+                            state.changeMode('discount');
+                        } else if (user.allow_edit_price) {
+                            state.changeMode('price');
+                        } else {
+                            state.changeMode("");
+                        }
                     }
                 }
             }
