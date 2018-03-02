@@ -93,9 +93,6 @@ odoo.define('pos_disable_payment', function(require){
                 line = line || order.get_selected_orderline();
                 var user = this.pos.cashier || this.pos.user;
                 var state = this.getParent().numpad.state;
-                if (state.get('mode') !== 'quantity') {
-                    state.changeMode('quantity');
-                }
                 if (!line) {
                     $('.numpad').find('.numpad-backspace').removeClass('disable');
                     $('.numpad').find("[data-mode='quantity']").removeClass('disable');
@@ -105,6 +102,7 @@ odoo.define('pos_disable_payment', function(require){
                 if (user.allow_decrease_amount) {
                     // allow all buttons
                     $('.numpad').find("[data-mode='quantity']").removeClass('disable');
+                    state.changeMode('quantity');
                     if (user.allow_delete_order_line) {
                         $('.numpad').find('.numpad-backspace').removeClass('disable');
                     }
@@ -118,18 +116,20 @@ odoo.define('pos_disable_payment', function(require){
                             state.changeMode('quantity');
                         }
                     } else if (line.mp_dirty) {
-                        $('.numpad').find("[data-mode='quantity']").removeClass('disable');
-                        if (state.get('mode') !== 'quantity') {
+                        if ($('.numpad').find("[data-mode='quantity']").hasClass('disable')) {
+                            $('.numpad').find("[data-mode='quantity']").removeClass('disable');
                             state.changeMode('quantity');
                         }
                     } else {
                         $('.numpad').find("[data-mode='quantity']").addClass('disable');
-                        if (user.allow_discount) {
-                            state.changeMode('discount');
-                        } else if (user.allow_edit_price) {
-                            state.changeMode('price');
-                        } else {
-                            state.changeMode("");
+                        if (state.get('mode') === 'quantity') {
+                            if (user.allow_discount && state.get('mode') !== 'discount') {
+                                state.changeMode('discount');
+                            } else if (user.allow_edit_price && state.get('mode') !== 'price') {
+                                state.changeMode('price');
+                            } else {
+                                state.changeMode("");
+                            }
                         }
                     }
                 }
@@ -175,6 +175,12 @@ odoo.define('pos_disable_payment', function(require){
                 this.$('.control-buttons .js_discount').removeClass('disable');
             }else{
                 this.$('.control-buttons .js_discount').addClass('disable');
+            }
+        },
+        show: function(reset){
+            this._super(reset);
+            if (reset) {
+                this.order_widget.check_kitchen_access();
             }
         }
     });
