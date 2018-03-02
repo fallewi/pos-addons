@@ -123,9 +123,9 @@ odoo.define('pos_disable_payment', function(require){
                     } else {
                         $('.numpad').find("[data-mode='quantity']").addClass('disable');
                         if (state.get('mode') === 'quantity') {
-                            if (user.allow_discount && state.get('mode') !== 'discount') {
+                            if (user.allow_discount) {
                                 state.changeMode('discount');
-                            } else if (user.allow_edit_price && state.get('mode') !== 'price') {
+                            } else if (user.allow_edit_price) {
                                 state.changeMode('price');
                             } else {
                                 state.changeMode("");
