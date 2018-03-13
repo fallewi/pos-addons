@@ -1,3 +1,7 @@
+`1.2.7`
+-------
+- FIX: Product category rendering error after orders sent to kitchen
+
 `1.2.6`
 -------
 
