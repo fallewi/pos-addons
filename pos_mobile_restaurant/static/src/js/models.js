@@ -27,14 +27,17 @@ odoo.define('pos_mobile_restaurant.models', function (require) {
     models.Orderline = models.Orderline.extend({
         set_dirty: function(dirty) {
             if (this.mp_dirty !== dirty) {
-                this.mp_dirty = dirty;
                 // the value is necessary for check the rerender function
                 this.change_dirty = true;
                 // change color of line
-                $(this.node).toggleClass('dirty');
-                this.trigger('change', this);
-                this.change_dirty = false;
+                if (dirty) {
+                    $(this.node).addClass('dirty');
+                } else {
+                    $(this.node).removeClass('dirty');
+                }
             }
+            _super_orderline.set_dirty.apply(this, arguments);
+            this.change_dirty = false;
         },
     });
 

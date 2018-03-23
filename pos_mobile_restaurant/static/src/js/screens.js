@@ -52,7 +52,7 @@ odoo.define('pos_mobile_restaurant.screens', function (require) {
                 return false;
             }
             this._super(order_line);
-        },
+        }
     });
 
     return screens;
