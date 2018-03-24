@@ -23,22 +23,37 @@ odoo.define('pos_mobile_restaurant.models', function (require) {
         }
     });
 
-    var _super_orderline = models.Orderline.prototype;
-    models.Orderline = models.Orderline.extend({
-        set_dirty: function(dirty) {
-            if (this.mp_dirty !== dirty) {
-                // the value is necessary for check the rerender function
-                this.change_dirty = true;
-                // change color of line
-                if (dirty) {
-                    $(this.node).addClass('dirty');
-                } else {
-                    $(this.node).removeClass('dirty');
-                }
+    var _super_order = models.Order.prototype;
+    models.Order = models.Order.extend({
+        saveChanges: function(){
+            var self = this;
+            this.saved_resume = this.build_line_resume();
+
+            function delay(ms) {
+                var d = $.Deferred();
+                setTimeout(function(){
+                    d.resolve();
+                }, ms);
+                return d.promise();
             }
-            _super_orderline.set_dirty.apply(this, arguments);
-            this.change_dirty = false;
-        },
+
+            var q = $.when();
+
+            var lines = this.get_orderlines();
+            lines.forEach(function(line, index){
+                q = q.then(function(){
+                    if (line.mp_dirty !== false) {
+                        $('.order-scroller').scrollTop(133 * index);
+                    }
+                    line.set_dirty(false);
+                    return delay(50);
+                });
+            });
+
+            q.then(function(){
+                self.trigger('change', self);
+            });
+        }
     });
 
     return models;
