@@ -200,8 +200,10 @@ odoo.define('pos_orders_history.screens', function (require) {
             var self = this;
             return _.map(order.lines, function (id) {
                 var line = self.pos.db.line_by_id[id];
-                line.image = self.get_product_image_url(line.product_id[0]);
-                return line;
+                if (line) {
+                    line.image = self.get_product_image_url(line.product_id[0]);
+                    return line;
+                }
             });
         },
         render_lines_table: function (data_lines) {
@@ -325,8 +327,8 @@ odoo.define('pos_orders_history.screens', function (require) {
                 if (order) {
                     this.search_order_on_history(order);
                 } else {
-                    // send request to server
-                    new Model('pos.order').call('search_read', [[['pos_history_reference_uid', '=', code.code]]]).then(function(o) {
+                    order = this.get_order_by_code(code);
+                    order.then(function(o) {
                         if (o && o.length) {
                             self.pos.update_orders_history(o);
                             if (o instanceof Array) {
@@ -354,6 +356,15 @@ odoo.define('pos_orders_history.screens', function (require) {
             } else {
                 this._super(code);
             }
+        },
+        get_order_by_code: function(code) {
+            // for compatibility with pos_orders_history_return module
+            var domain = [['pos_history_reference_uid', '=', code.code]];
+            if (this.pos.config.return_orders) {
+                domain.push(['returned_order', '=', false]);
+            }
+            // send request to server
+            return new Model('pos.order').call('search_read', [domain]);
         },
         // what happens when a barcode is scanned :
         // it will add the order reference to the search in orders history screen

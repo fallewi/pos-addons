@@ -120,8 +120,10 @@ class EscposNetworkDriver(EscposDriver):
                         if printer_info and printer_info['status'] == 'online' and printer:
                             _logger.info('Printing XML receipt on printer %s...', network_printer_ip)
                             try:
+                                print(receipt)
                                 printer.receipt(receipt)
                             except socket.error:
+                                print (receipt)
                                 printer.open()
                                 printer.receipt(receipt)
                             _logger.info('Done printing XML receipt on printer %s', network_printer_ip)

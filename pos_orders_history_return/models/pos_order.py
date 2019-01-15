@@ -14,6 +14,8 @@ class PosOrder(models.Model):
     _inherit = "pos.order"
 
     returned_order = fields.Boolean('Returned Order', default=False)
+    original_order_id = fields.Many2one("pos.order", string="Original order",
+                                        help="Link to the Original Order (if the current order is returned)")
 
     @api.model
     def create_from_ui(self, orders):
@@ -59,7 +61,11 @@ class PosOrder(models.Model):
             if pos_session.state == 'closing_control' or pos_session.state == 'closed':
                 pos_order['pos_session_id'] = self._get_valid_session(pos_order).id
             order = self.create(self._order_fields(pos_order))
-            order.write({'returned_order': True})
+            order.write({
+                'returned_order': True,
+                'original_order_id': self.search([('pos_reference', '=', order.pos_reference),
+                                                  ('returned_order', '=', False), ('id', '!=', order.id)]).id
+            })
             journal_ids = set()
             for payments in pos_order['statement_ids']:
                 if not float_is_zero(payments[2]['amount'], precision_digits=prec_acc):
